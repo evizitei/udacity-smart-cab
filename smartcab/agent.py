@@ -80,6 +80,7 @@ class LearningAgent(Agent):
         q_key = self.q_key_for(state, action)
         cur_value = self.q_value_for(state, action)
         inputs = self.env.sense(self)
+        self.next_waypoint = self.planner.next_waypoint()
         new_state = self.build_state(inputs)
         learned_value = reward + (self.discount_rate * self.max_q_value(new_state))
         new_q_value = cur_value + (self.learning_rate * (learned_value - cur_value))
