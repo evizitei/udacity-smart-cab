@@ -11,7 +11,11 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         self.state = {}
-        # TODO: Initialize any additional variables here
+        self.learning_rate = 0.5
+        self.exploration_rate = 0.1
+        self.discount_rate = 0.8
+        self.q_values = {}
+        self.valid_actions = [None, 'forward', 'left', 'right']
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
@@ -23,24 +27,66 @@ class LearningAgent(Agent):
         inputs = self.env.sense(self)
         deadline = self.env.get_deadline(self)
 
-        # TODO: Update state
-        self.state = {
-          "light": inputs["light"],
-          "oncoming": inputs["oncoming"],
-          "left": inputs["left"],
-          "direction": self.next_waypoint
-        }
+        self.state = self.build_state(inputs)
 
         # TODO: Select action according to your policy
-        action = random.choice([None, 'forward', 'left', 'right'])
+        action = self.choose_action_from_policy(self.state)
 
         # Execute action and get reward
         reward = self.env.act(self, action)
 
         # TODO: Learn policy based on state, action, reward
+        self.update_q_value(self.state, action, reward)
 
         print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
-        print "LearningAgent.state: {}".format(self.state)
+        print "LearningAgent.q_values: {}".format(self.q_values)
+
+    def build_state(self, inputs):
+      return {
+        "light": inputs["light"],
+        "oncoming": inputs["oncoming"],
+        "left": inputs["left"],
+        "direction": self.next_waypoint
+      }
+
+    def choose_action_from_policy(self, state):
+        if random.random() < self.exploration_rate:
+            return random.choice(self.valid_actions)
+        best_action = self.valid_actions[0]
+        best_value = 0
+        for action in self.valid_actions:
+            cur_value = self.q_value_for(state, action)
+            if cur_value > best_value:
+                best_action = action
+                best_value = cur_value
+        return best_action
+
+    def max_q_value(self, state):
+        max_value = None
+        for action in self.valid_actions:
+            cur_value = self.q_value_for(state, action)
+            if max_value is None or cur_value > max_value:
+                max_value = cur_value
+        return max_value
+
+    def q_value_for(self, state, action):
+        q_key = self.q_key_for(state, action)
+        if q_key in self.q_values:
+            return self.q_values[q_key]
+        return 0
+
+    def update_q_value(self, state, action, reward):
+        q_key = self.q_key_for(state, action)
+        cur_value = self.q_value_for(state, action)
+        inputs = self.env.sense(self)
+        new_state = self.build_state(inputs)
+        learned_value = reward + (self.discount_rate * self.max_q_value(new_state))
+        new_q_value = cur_value + (self.learning_rate * (learned_value - cur_value))
+        self.q_values[q_key] = new_q_value
+
+    def q_key_for(self, state, action):
+        return "{}|{}|{}|{}|{}".format(state["light"], state["direction"], state["oncoming"], state["left"], action)
+
 
 
 def run():
@@ -49,7 +95,7 @@ def run():
     # Set up environment and agent
     e = Environment()  # create environment (also adds some dummy traffic)
     a = e.create_agent(LearningAgent)  # create agent
-    e.set_primary_agent(a, enforce_deadline=False)  # specify agent to track
+    e.set_primary_agent(a, enforce_deadline=True)  # specify agent to track
     # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
 
     # Now simulate it

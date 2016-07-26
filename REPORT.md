@@ -11,6 +11,8 @@ it will always _eventually_ hit the waypoint given infinite time,
 but there's also no assurance that it will do so within any finite timeline
 no matter how large you make it.
 
+## After State Storage
+
 #### QUESTION: What states have you identified that are appropriate for modeling the smartcab and environment? Why do you believe each of these states to be appropriate for this problem?
 
 I believe the things that should go in local state for the agent should be bits
@@ -51,3 +53,32 @@ to keep track of state/action values for 96 possible states.  The number of
 possible actions is 4 ("None" being an option if the safety circumstances of
 the current environment prevent taking the desired action immediately), so that
 means we have 96 states and 4 possible actions, or 384 state/action pairs.
+
+## After Q-Learning stage 1
+
+#### QUESTION: What changes do you notice in the agent's behavior when compared to the basic driving agent when random actions were always taken? Why is this behavior occurring?
+
+At first the behavior is not very different at all, for at least the first episode or two.
+Quickly the agent begins to manage to get to the waypoint before the deadline,
+though at least for this iteration it's behavior is a bit strange (more on that
+  in a minute).  Over time the agent also begins to drive more safely and legally,
+  though not always.  This is occuring because it examines it's history of behavior
+and what sort of rewards have occured when it's taken actions in given states before.
+When deciding whether or not to go "forward" when the light is red, it notices
+that it's been penalized for this before and that taking the "None" action in
+this state is better, for example.
+
+This is not totally as I'd expect, though.  For one thing, the agent appears
+to prefer to keep driving rather than hold still; so if it can't drive forward like
+it would prefer because of a red light, but it _can_ turn right, it seems
+to do so even though it will get hit with a -0.5 reward.  I suspect this is because
+I've set the discount rate for future rewards to be 0.8, and it's valuing the future
+2.0 rewards it will get for driving back towards the waypoint too highly.  I think
+I should reduce the discount rate signficiantly.
+
+Additionally, it still takes illegal actions sometimes because I'm using an
+exploration value of 10% and so even when it knows the right thing to do, 10%
+of the time it takes a random action, often an unsafe or illegal one.  I think
+I need to have some exploration path that doesn't just pick a random value; maybe
+we start with a higher epsilon value and reduce it to 0 over time by reducing it
+each time the exploration path is hit by a tiny amount.
