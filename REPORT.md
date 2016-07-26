@@ -263,3 +263,15 @@ that's better than a higher time-efficiency rating at the expense of causing tra
 accidents occasionally.  The most optimal policy (if it exists) would
 arrive on time 99.9% of the time (when deadline is reasonable) is never crash
 or break the law.
+
+## Final Trial Results:
+
+* Learning Rate: 0.6
+* REWARD FOR STAYING STILL: -0.1
+* Discount Value: 0.25
+* Initial Epsilon Value: 0.1
+* Epsilon Degradation Rate: 0.001
+* Trials: 100
+* Deadlines Missed: 1
+* Successful Arrivals: 99
+* Traffic Infractions: 39
