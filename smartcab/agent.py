@@ -11,9 +11,10 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         self.state = {}
-        self.learning_rate = 0.5
+        self.learning_rate = 0.6
         self.exploration_rate = 0.1
-        self.discount_rate = 0.8
+        self.exploration_degradation_rate = 0.001
+        self.discount_rate = 0.4
         self.q_values = {}
         self.valid_actions = [None, 'forward', 'left', 'right']
 
@@ -38,8 +39,7 @@ class LearningAgent(Agent):
         # TODO: Learn policy based on state, action, reward
         self.update_q_value(self.state, action, reward)
 
-        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
-        print "LearningAgent.q_values: {}".format(self.q_values)
+        #print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
 
     def build_state(self, inputs):
       return {
@@ -51,6 +51,7 @@ class LearningAgent(Agent):
 
     def choose_action_from_policy(self, state):
         if random.random() < self.exploration_rate:
+            self.exploration_rate -= self.exploration_degradation_rate
             return random.choice(self.valid_actions)
         best_action = self.valid_actions[0]
         best_value = 0
@@ -99,11 +100,15 @@ def run():
     # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
 
     # Now simulate it
-    sim = Simulator(e, update_delay=0.5, display=True)  # create simulator (uses pygame when display=True, if available)
+    sim = Simulator(e, update_delay=0.0, display=True)  # create simulator (uses pygame when display=True, if available)
     # NOTE: To speed up simulation, reduce update_delay and/or set display=False
 
-    sim.run(n_trials=100)  # run for a specified number of trials
+    sim.run(n_trials=500)  # run for a specified number of trials
     # NOTE: To quit midway, press Esc or close pygame window, or hit Ctrl+C on the command-line
+    print "CONCLUSION REPORT"
+    print "WINS: {}".format(e.wins)
+    print "LOSSES: {}".format(e.losses)
+    print "INFRACTIONS: {}".format(e.infractions)
 
 
 if __name__ == '__main__':

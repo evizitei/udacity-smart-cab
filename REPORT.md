@@ -82,3 +82,165 @@ of the time it takes a random action, often an unsafe or illegal one.  I think
 I need to have some exploration path that doesn't just pick a random value; maybe
 we start with a higher epsilon value and reduce it to 0 over time by reducing it
 each time the exploration path is hit by a tiny amount.
+
+## During Q-learning parameter iteration:
+
+Learning Rate: 0.5
+Discount Value: 0.8
+Initial Epsilon Value: 0.1
+Epsilon Degradation Rate: 0.0
+Trials: 100
+Deadlines Missed: 23
+Successful Arrivals: 77
+Traffic Infractions: 71
+
+*attempts to make epsilon value degrade over time*
+
+Learning Rate: 0.5
+Discount Value: 0.8
+Initial Epsilon Value: 0.15
+Epsilon Degradation Rate: 0.01
+Trials: 100
+Deadlines Missed: 62
+Successful Arrivals: 38
+Traffic Infractions: 5
+
+Learning Rate: 0.5
+Discount Value: 0.8
+Initial Epsilon Value: 0.1
+Epsilon Degradation Rate: 0.001
+Trials: 100
+Deadlines Missed: 26
+Successful Arrivals: 74
+Traffic Infractions: 25
+
+*decrease discount value to make strange looping behaviors reduce*
+
+Learning Rate: 0.5
+Discount Value: 0.3
+Initial Epsilon Value: 0.1
+Epsilon Degradation Rate: 0.001
+Trials: 100
+Deadlines Missed: 12
+Successful Arrivals: 88
+Traffic Infractions: 27
+
+*increase learning rate to value immediate rewards more highly*
+
+Learning Rate: 0.65
+Discount Value: 0.3
+Initial Epsilon Value: 0.1
+Epsilon Degradation Rate: 0.001
+Trials: 100
+Deadlines Missed: 14
+Successful Arrivals: 86
+Traffic Infractions: 22
+
+*crank down the discount value further, that made a big impact on success rates*
+
+Learning Rate: 0.65
+Discount Value: 0.2
+Initial Epsilon Value: 0.1
+Epsilon Degradation Rate: 0.001
+Trials: 100
+Deadlines Missed: 35
+Successful Arrivals: 65
+Traffic Infractions: 22
+
+*actually that was worse, bring discount value up a bit and learning rate down*
+
+Learning Rate: 0.6
+Discount Value: 0.25
+Initial Epsilon Value: 0.1
+Epsilon Degradation Rate: 0.001
+Trials: 100
+Deadlines Missed: 11
+Successful Arrivals: 89
+Traffic Infractions: 26
+
+
+#### QUESTION: Report the different values for the parameters tuned in your basic implementation of Q-Learning. For which set of parameters does the agent perform best? How well does the final driving agent perform?
+
+The numbers are available above.  The last set performs best, of the
+sampled parameter combinations, and behaves more rationally than the initial
+agent when it's route is blocked.  Once it's gone through around 12 iterations,
+it begins to behave reliably, and by the time it's gone through the first 30
+episodes it's traffic infraction rate drops significantly.  I suspect over
+time it performs quite well, so I'm going to run another set of 5,000 trials
+because I suspect it has converged already and will perform more or less successfully
+from this point forward.
+
+Learning Rate: 0.6
+Discount Value: 0.25
+Initial Epsilon Value: 0.1
+Epsilon Degradation Rate: 0.001
+Trials: 5000
+Deadlines Missed: 331
+Successful Arrivals: 4619
+Traffic Infractions: 24
+
+This approach is working ok, but there are some edge cases.  When we run into
+another car at an intersection in the oncoming lane, we tend to lock up.  It
+seems we've learned that it's simply safest to let other cars go, and if both
+agents decide that then we get stuck.  We could up the experimentation rate, but
+that would result in more infractions and we don't want that.  I think the next
+step might be to have the epsilon value scale out the current q values by
+random amounts rather than just go away entirely so that if we're stuck for long
+enough the car will pick another "valid" direction eventually.  Another possibility
+might be to attach a slight negative reward to holding still; less than the penalty
+of committing an infraction, of course, but high enough to encourage us out of
+just being parked and waiting.  Increasing the discount rate would also help with
+this.  That's probably the easiest to mess with so we'll try that one first.
+
+Learning Rate: 0.6
+Discount Value: 0.4
+Initial Epsilon Value: 0.1
+Epsilon Degradation Rate: 0.001
+Trials: 100
+Deadlines Missed: 14
+Successful Arrivals: 86
+Traffic Infractions: 23
+
+This doesn't seem to be helping enough when I scale it up over a large number
+of trials, we still suffer failure > 10% of the time because of locking up
+in certain cases.  I'm going to revert the discount value and try instead
+accumulating a small negative reward for staying still.
+
+Learning Rate: 0.6
+REWARD FOR STAYING STILL: -0.1
+Discount Value: 0.25
+Initial Epsilon Value: 0.1
+Epsilon Degradation Rate: 0.001
+Trials: 100
+Deadlines Missed: 4
+Successful Arrivals: 96
+Traffic Infractions: 28
+
+That seems way better.  Let's see how it does scaled up over 500 trials.
+
+Learning Rate: 0.6
+REWARD FOR STAYING STILL: -0.1
+Discount Value: 0.25
+Initial Epsilon Value: 0.1
+Epsilon Degradation Rate: 0.001
+Trials: 500
+Deadlines Missed: 38
+Successful Arrivals: 462
+Traffic Infractions: 26
+
+We're still missing some deadlines unnecessarily, but fewer, and the infractions
+are stable.  This is probably good enough.
+
+#### QUESTION: Does your agent get close to finding an optimal policy, i.e. reach the destination in the minimum possible time, and not incur any penalties? How would you describe an optimal policy for this problem?
+
+I believe this is fairly close, but that an optimum policy would probably
+make some cleverer decisions when blocked.  I think that by re-implementing
+the epsilon degredation to instead have an action randomly selected from the
+actions known to not be illegal that could be slightly better.  Still, this is
+fairly close specifically because we care about both not breaking the law/hurting people
+ and getting there on time, but far more about the first than the second thing.
+If we can get there on time 90% of the time, and never break the law or crash,
+that's better than a higher time-efficiency rating at the expense of causing traffic
+accidents occasionally.  The most optimal policy (if it exists) would
+arrive on time 99.9% of the time (when deadline is reasonable) is never crash
+or break the law.
