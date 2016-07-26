@@ -60,6 +60,8 @@ class LearningAgent(Agent):
             if cur_value > best_value:
                 best_action = action
                 best_value = cur_value
+            elif cur_value == best_value:
+                best_action = random.choice([best_action, action])
         return best_action
 
     def max_q_value(self, state):
