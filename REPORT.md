@@ -21,8 +21,24 @@ direction of travel from the planner, almost every input qualifies
 with the exception of what any car to the right in the current intersection is
 planning to do.
 
-I can't think of a scenario in which we care about that.  If we want to go straight,
-then if the light is green we can go, and if red we can't.  If we want to go right,
+We need the direction of travel (next_waypoint) because the direction
+of the next waypoint informs which way we would prefer to travel; without this bit of
+information we wouldn't have a reason to turn left instead of going straight, or
+any reason to travel any particular direction really.
+
+We need to know whether
+the light is green or red because that limits whether we can take our desired action
+right now (we'd prefer to travel forward, for example, but if we do so when the
+light is red that's a traffic infraction with negative reward).
+
+We have to know the status of any cars at the intersection oncoming or to the left,
+because they can interfere with a desired action.  If we want to travel right,
+we can do so on a red light as long as there are no cars from the left traveling
+through.  If we want to travel left we can do so as long as there is no oncoming
+car traveling straight across.
+
+I can't think of a scenario in which we care about cars to the right, though.
+If we want to go straight, then if the light is green we can go, and if red we can't.  If we want to go right,
 then on green we just go, on red we care what the car from the left wants to do.
 If we want to go left, then on red we stop, and on green we care what the oncoming
 car wants to do.  In no case do we care about the intentions of the car to the
@@ -32,7 +48,8 @@ actually want to consider in a more realistic simulation).
 We also don't really care about deadline, since regardless of how long is left on the clock
 we still want to take the optimal action at each step (we would not want to make a car that
 would break safety laws when in a hurry, this wouldn't be a lot better than a human
-driver).
+driver).  Additionally, there are a lot of possible deadline values, which
+would explode the number of states we need to account for in the learning matrix.
 
 #### OPTIONAL: How many states in total exist for the smartcab in this environment? Does this number seem reasonable given that the goal of Q-Learning is to learn and make informed decisions about each state? Why or why not?
 
@@ -62,8 +79,8 @@ At first the behavior is not very different at all, for at least the first episo
 Quickly the agent begins to manage to get to the waypoint before the deadline,
 though at least for this iteration it's behavior is a bit strange (more on that
   in a minute).  Over time the agent also begins to drive more safely and legally,
-  though not always.  This is occuring because it examines it's history of behavior
-and what sort of rewards have occured when it's taken actions in given states before.
+  though not always.  This is occurring because it examines it's history of behavior
+and what sort of rewards have occurred when it's taken actions in given states before.
 When deciding whether or not to go "forward" when the light is red, it notices
 that it's been penalized for this before and that taking the "None" action in
 this state is better, for example.
@@ -74,7 +91,7 @@ it would prefer because of a red light, but it _can_ turn right, it seems
 to do so even though it will get hit with a -0.5 reward.  I suspect this is because
 I've set the discount rate for future rewards to be 0.8, and it's valuing the future
 2.0 rewards it will get for driving back towards the waypoint too highly.  I think
-I should reduce the discount rate signficiantly.
+I should reduce the discount rate significantly.
 
 Additionally, it still takes illegal actions sometimes because I'm using an
 exploration value of 10% and so even when it knows the right thing to do, 10%
