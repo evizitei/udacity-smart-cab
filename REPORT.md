@@ -85,78 +85,80 @@ each time the exploration path is hit by a tiny amount.
 
 ## During Q-learning parameter iteration:
 
-Learning Rate: 0.5
-Discount Value: 0.8
-Initial Epsilon Value: 0.1
-Epsilon Degradation Rate: 0.0
-Trials: 100
-Deadlines Missed: 23
-Successful Arrivals: 77
-Traffic Infractions: 71
+* Learning Rate:             0.5
+* Discount Value:            0.8
+* Initial Epsilon Value:     0.1
+* Epsilon Degradation Rate:  0.0
+* Trials:                    100
+* Deadlines Missed:          23  
+* Successful Arrivals:       77  
+* Traffic Infractions:       71  
 
 *attempts to make epsilon value degrade over time*
 
-Learning Rate: 0.5
-Discount Value: 0.8
-Initial Epsilon Value: 0.15
-Epsilon Degradation Rate: 0.01
-Trials: 100
-Deadlines Missed: 62
-Successful Arrivals: 38
-Traffic Infractions: 5
+* Learning Rate:             0.5  
+* Discount Value:            0.8  
+* Initial Epsilon Value:     0.15
+* Epsilon Degradation Rate:  0.01
+* Trials:                    100  
+* Deadlines Missed:          62   
+* Successful Arrivals:       38   
+* Traffic Infractions:       5    
 
-Learning Rate: 0.5
-Discount Value: 0.8
-Initial Epsilon Value: 0.1
-Epsilon Degradation Rate: 0.001
-Trials: 100
-Deadlines Missed: 26
-Successful Arrivals: 74
-Traffic Infractions: 25
+
+* Learning Rate:             0.5   
+* Discount Value:            0.8   
+* Initial Epsilon Value:     0.1   
+* Epsilon Degradation Rate:  0.001
+* Trials:                    100   
+* Deadlines Missed:          26    
+* Successful Arrivals:       74    
+* Traffic Infractions:       25    
+
 
 *decrease discount value to make strange looping behaviors reduce*
 
-Learning Rate: 0.5
-Discount Value: 0.3
-Initial Epsilon Value: 0.1
-Epsilon Degradation Rate: 0.001
-Trials: 100
-Deadlines Missed: 12
-Successful Arrivals: 88
-Traffic Infractions: 27
+* Learning Rate:             0.5   
+* Discount Value:            0.3   
+* Initial Epsilon Value:     0.1   
+* Epsilon Degradation Rate:  0.001
+* Trials:                    100   
+* Deadlines Missed:          12    
+* Successful Arrivals:       88    
+* Traffic Infractions:       27    
 
 *increase learning rate to value immediate rewards more highly*
 
-Learning Rate: 0.65
-Discount Value: 0.3
-Initial Epsilon Value: 0.1
-Epsilon Degradation Rate: 0.001
-Trials: 100
-Deadlines Missed: 14
-Successful Arrivals: 86
-Traffic Infractions: 22
+* Learning Rate: 0.65
+* Discount Value: 0.3
+* Initial Epsilon Value: 0.1
+* Epsilon Degradation Rate: 0.001
+* Trials: 100
+* Deadlines Missed: 14
+* Successful Arrivals: 86
+* Traffic Infractions: 22
 
 *crank down the discount value further, that made a big impact on success rates*
 
-Learning Rate: 0.65
-Discount Value: 0.2
-Initial Epsilon Value: 0.1
-Epsilon Degradation Rate: 0.001
-Trials: 100
-Deadlines Missed: 35
-Successful Arrivals: 65
-Traffic Infractions: 22
+* Learning Rate: 0.65
+* Discount Value: 0.2
+* Initial Epsilon Value: 0.1
+* Epsilon Degradation Rate: 0.001
+* Trials: 100
+* Deadlines Missed: 35
+* Successful Arrivals: 65
+* Traffic Infractions: 22
 
 *actually that was worse, bring discount value up a bit and learning rate down*
 
-Learning Rate: 0.6
-Discount Value: 0.25
-Initial Epsilon Value: 0.1
-Epsilon Degradation Rate: 0.001
-Trials: 100
-Deadlines Missed: 11
-Successful Arrivals: 89
-Traffic Infractions: 26
+* Learning Rate: 0.6
+* Discount Value: 0.25
+* Initial Epsilon Value: 0.1
+* Epsilon Degradation Rate: 0.001
+* Trials: 100
+* Deadlines Missed: 11
+* Successful Arrivals: 89
+* Traffic Infractions: 26
 
 
 #### QUESTION: Report the different values for the parameters tuned in your basic implementation of Q-Learning. For which set of parameters does the agent perform best? How well does the final driving agent perform?
@@ -170,14 +172,14 @@ time it performs quite well, so I'm going to run another set of 5,000 trials
 because I suspect it has converged already and will perform more or less successfully
 from this point forward.
 
-Learning Rate: 0.6
-Discount Value: 0.25
-Initial Epsilon Value: 0.1
-Epsilon Degradation Rate: 0.001
-Trials: 5000
-Deadlines Missed: 331
-Successful Arrivals: 4619
-Traffic Infractions: 24
+* Learning Rate: 0.6
+* Discount Value: 0.25
+* Initial Epsilon Value: 0.1
+* Epsilon Degradation Rate: 0.001
+* Trials: 5000
+* Deadlines Missed: 331
+* Successful Arrivals: 4619
+* Traffic Infractions: 24
 
 This approach is working ok, but there are some edge cases.  When we run into
 another car at an intersection in the oncoming lane, we tend to lock up.  It
@@ -192,41 +194,41 @@ of committing an infraction, of course, but high enough to encourage us out of
 just being parked and waiting.  Increasing the discount rate would also help with
 this.  That's probably the easiest to mess with so we'll try that one first.
 
-Learning Rate: 0.6
-Discount Value: 0.4
-Initial Epsilon Value: 0.1
-Epsilon Degradation Rate: 0.001
-Trials: 100
-Deadlines Missed: 14
-Successful Arrivals: 86
-Traffic Infractions: 23
+* Learning Rate: 0.6
+* Discount Value: 0.4
+* Initial Epsilon Value: 0.1
+* Epsilon Degradation Rate: 0.001
+* Trials: 100
+* Deadlines Missed: 14
+* Successful Arrivals: 86
+* Traffic Infractions: 23
 
 This doesn't seem to be helping enough when I scale it up over a large number
 of trials, we still suffer failure > 10% of the time because of locking up
 in certain cases.  I'm going to revert the discount value and try instead
 accumulating a small negative reward for staying still.
 
-Learning Rate: 0.6
-REWARD FOR STAYING STILL: -0.1
-Discount Value: 0.25
-Initial Epsilon Value: 0.1
-Epsilon Degradation Rate: 0.001
-Trials: 100
-Deadlines Missed: 4
-Successful Arrivals: 96
-Traffic Infractions: 28
+* Learning Rate: 0.6
+* REWARD FOR STAYING STILL: -0.1
+* Discount Value: 0.25
+* Initial Epsilon Value: 0.1
+* Epsilon Degradation Rate: 0.001
+* Trials: 100
+* Deadlines Missed: 4
+* Successful Arrivals: 96
+* Traffic Infractions: 28
 
 That seems way better.  Let's see how it does scaled up over 500 trials.
 
-Learning Rate: 0.6
-REWARD FOR STAYING STILL: -0.1
-Discount Value: 0.25
-Initial Epsilon Value: 0.1
-Epsilon Degradation Rate: 0.001
-Trials: 500
-Deadlines Missed: 38
-Successful Arrivals: 462
-Traffic Infractions: 26
+* Learning Rate: 0.6
+* REWARD FOR STAYING STILL: -0.1
+* Discount Value: 0.25
+* Initial Epsilon Value: 0.1
+* Epsilon Degradation Rate: 0.001
+* Trials: 500
+* Deadlines Missed: 38
+* Successful Arrivals: 462
+* Traffic Infractions: 26
 
 We're still missing some deadlines unnecessarily, but fewer, and the infractions
 are stable.  This is probably good enough.
@@ -235,7 +237,7 @@ are stable.  This is probably good enough.
 
 I believe this is fairly close, but that an optimum policy would probably
 make some cleverer decisions when blocked.  I think that by re-implementing
-the epsilon degredation to instead have an action randomly selected from the
+the epsilon degradation to instead have an action randomly selected from the
 actions known to not be illegal that could be slightly better.  Still, this is
 fairly close specifically because we care about both not breaking the law/hurting people
  and getting there on time, but far more about the first than the second thing.
